@@ -26,6 +26,20 @@ function showSite(siteID, req, res){
 	}
 }
 
+function showHorse(siteID, req, res){
+	var site = sites.sitesByID[siteID];
+	if(site){
+		console.log(site.horse);
+		var twitterHandle = site.horse;
+		siteLogger.info(siteID + " " + site.shortcuts[0] + " " + (req.headers["x-real-ip"] || req.connection.remoteAddress));
+		res.redirect("http://twitter.com/"+ twitterHandle);
+		return true;
+	}else{
+		siteLogger.warn("no horse defined: " + siteID);
+		return false;
+	}
+}
+
 exports.setup = function(app) {
 	app.get("/sites.json", function(req, res){
 		res.contentType("application/json");
@@ -39,7 +53,7 @@ exports.setup = function(app) {
 			var siteID = hostMatches[1].toLowerCase();
 			if(showSite(siteID, req, res)){
 				return;
-			}
+			}		
 		}
 
 		res.render('index', { title: 'Dev Centers', sites: sites.sitesList });
@@ -48,6 +62,12 @@ exports.setup = function(app) {
 	app.get("/:site_id", function(req, res){
 		var siteID = req.params.site_id.toLowerCase();
 		if(!showSite(siteID, req, res)){
+			res.redirect('/');
+		}
+	});
+	app.get("/:site_id/horse", function(req, res){
+		var siteID = req.params.site_id.toLowerCase();
+		if(!showHorse(siteID, req, res)){
 			res.redirect('/');
 		}
 	});
